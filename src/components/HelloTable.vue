@@ -1,18 +1,15 @@
 <template>
   <div>
     <el-table :data="tableData" style="width: 100%">
-      <el-table-column prop="name" label="Name"></el-table-column>
-      <el-table-column prop="age" label="Age"></el-table-column>
-      <el-table-column prop="gender" label="Gender"></el-table-column>
-      <el-table-column prop="address" label="Address"></el-table-column>
-      <el-table-column label="Operations">
+      <el-table-column v-for="(item, idx) in tableHeader" :key="idx" :prop="item" :label="item"></el-table-column>
+      <el-table-column label="Operations" v-if="canEdit || canDelete">
         <template slot-scope="scope">
-          <el-button type="primary" size="mini" @click="handleEdit(scope.$index, scope.row)">Edit</el-button>
-          <el-button type="danger" size="mini" @click="handleDelete(scope.$index)">Delete</el-button>
+          <el-button v-if="canEdit" type="primary" size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+          <el-button v-if="canDelete" type="danger" size="mini" @click="handleDelete(scope.$index)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
-    <el-dialog :visible.sync="dialogVisible">
+    <el-dialog :visible.sync="editDialogVisible">
       <el-form :model="editedData" label-width="80px">
         <el-form-item label="Name">
           <el-input v-model="editedData.name"></el-input>
@@ -37,29 +34,36 @@
 
 <script>
 export default {
-  name: 'HelloWorld',
+  name: 'HelloTable',
   props: {
-    param: {
+    tableHeader: {
+      type: Array,
+      default: () => []
+    },
+    initTableData: {
       type: Object,
       default: () => ({})
+    },
+    canEdit: {
+      type: Boolean,
+      default: () => false
+    },
+    canDelete: {
+      type: Boolean,
+      default: () => false
     }
   },
   data() {
     return {
-      tableData: [
-        { name: 'John', age: 18, gender: 'Male', address: 'New York' },
-        { name: 'Jane', age: 22, gender: 'Female', address: 'London' },
-        { name: 'Bob', age: 32, gender: 'Male', address: 'Paris' },
-        { name: 'Tom', age: 24, gender: 'Male', address: 'Tokyo' }
-      ],
-      dialogVisible: false,
-      editedData: {}
+      tableData: this.initTableData,
+      editDialogVisible: false,
+      editedData: {},
     }
   },
   methods: {
     handleEdit(index, row) {
       this.editedData = Object.assign({}, row)
-      this.dialogVisible = true
+      this.editDialogVisible = true
     },
     handleDelete(index) {
       this.tableData.splice(index, 1)
@@ -71,7 +75,7 @@ export default {
       } else {
         this.tableData.push(this.editedData)
       }
-      this.dialogVisible = false
+      this.editDialogVisible = false
     }
   }
 }
