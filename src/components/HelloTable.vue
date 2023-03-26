@@ -41,8 +41,8 @@ export default {
       default: () => []
     },
     initTableData: {
-      type: Object,
-      default: () => ({})
+      type: Array,
+      default: () => ([])
     },
     canEdit: {
       type: Boolean,
