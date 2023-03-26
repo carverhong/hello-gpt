@@ -1,36 +1,53 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <div>
-      <p>
-        If Element is successfully added to this project, you'll see an
-        <code v-text="'<el-button>'"></code>
-        below
+    <div id="input-area">
+      <p v-for="(item, idx) in historyInput" :key="idx">
+        {{ item }}
       </p>
-      <el-button>el-button</el-button>
+      <el-input v-model="currentInput" placeholder="请输入prompt">
+        <template slot="append">
+          <el-button @click="generate">生成</el-button>
+        </template>
+      </el-input>
     </div>
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <HelloWorld />
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import HelloWorld from "./components/HelloWorld.vue";
 
 export default {
-  name: 'app',
+  name: "app",
   components: {
-    HelloWorld
+    HelloWorld,
+  },
+  data() {
+    return {
+      historyInput: [],
+      currentInput: ''
+    }
+  },
+  methods: {
+    generate() {
+      // TODO: 调用AI接口生成
+      this.historyInput.push(this.currentInput);
+      this.currentInput = '';
+    }
   }
-}
+};
 </script>
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+#input-area {
+  margin-bottom: 60px;
 }
 </style>
