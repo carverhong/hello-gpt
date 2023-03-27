@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-table :data="tableData" style="width: 100%">
-      <el-table-column v-for="(item, idx) in tableHeader" :key="idx" :prop="item" :label="item"></el-table-column>
+      <el-table-column v-for="(item, idx) in tableHeader" :key="idx" :prop="item.name" :label="item.name"></el-table-column>
       <el-table-column label="Operations" v-if="canEdit || canDelete">
         <template slot-scope="scope">
           <el-button v-if="canEdit" type="primary" size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>

@@ -9,19 +9,26 @@
           <el-button @click="generate">生成组件</el-button>
         </template>
       </el-input>
+      <el-input v-model="apiKey" placeholder="请输入ApiKey">
+        <template slot="append">
+          <el-button @click="inputApiKey">完成</el-button>
+        </template>
+      </el-input>
+      <el-input v-model="prompt" placeholder="请输入测试prompt">
+        <template slot="append">
+          <el-button @click="onSubmit">测试</el-button>
+        </template>
+      </el-input>
     </div>
-    <component
-      :is="compName"
-      :initTableData="helloTableParams.tableData"
-      :tableHeader="helloTableParams.tableHeader"
-      :canEdit="helloTableParams.canEdit"
-      :canDelete="helloTableParams.canDelete"
-    />
+    <component :is="compName" :initTableData="helloTableParams.data" :tableHeader="helloTableParams.columns"
+      :canEdit="helloTableParams.canEdit" :canDelete="helloTableParams.canDelete" />
   </div>
 </template>
 
 <script>
 import HelloTable from "./components/HelloTable.vue";
+import { Configuration, OpenAIApi } from "openai";
+import { generatePrompt } from "./utils/datasource";
 
 export default {
   name: "app",
@@ -32,13 +39,23 @@ export default {
     return {
       historyInput: [],
       currentInput: "",
+      apiKey: "",
+      prompt: "",
       compDSL: "",
       compName: "",
       helloTableParams: {},
+      openai: null,
     };
   },
+  mounted() {
+    const configuration = new Configuration({
+      apiKey: '',
+    });
+    const openai = new OpenAIApi(configuration);
+    this.openai = openai;
+  },
   methods: {
-    generate() {
+    generate(params) {
       // TODO: 调用AI接口生成
       const dsl = {
         comp: "HelloTable",
@@ -59,9 +76,29 @@ export default {
       this.currentInput = "";
       this.compName = dsl.comp;
       if (dsl.comp === "HelloTable") {
-        this.helloTableParams = dsl.params;
+        // this.helloTableParams = dsl.params;
+        this.helloTableParams = params;
       }
     },
+    async onSubmit(event) {
+      event.preventDefault();
+      try {
+        const completion = await this.openai.createCompletion({
+          model: "text-davinci-003",
+          prompt: generatePrompt(this.prompt),
+          temperature: 0,
+          max_tokens: 3000
+        });
+
+        const params = eval(completion.data.choices[0].text);
+
+        console.log(params);
+        this.generate(params[0].value)
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    inputApiKey() {},
   },
 };
 </script>
@@ -75,6 +112,7 @@ export default {
   color: #2c3e50;
   margin-top: 60px;
 }
+
 #input-area {
   margin-bottom: 60px;
 }
