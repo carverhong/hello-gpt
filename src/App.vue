@@ -9,19 +9,35 @@
           <el-button @click="generate">生成组件</el-button>
         </template>
       </el-input>
-      <el-input v-model="apiKey" placeholder="请输入ApiKey">
-        <template slot="append">
-          <el-button @click="inputApiKey">完成</el-button>
-        </template>
-      </el-input>
-      <el-input v-model="prompt" placeholder="请输入测试prompt">
-        <template slot="append">
-          <el-button @click="onSubmit">测试</el-button>
-        </template>
-      </el-input>
+      <div style="margin-top: 15px">
+        <el-input v-model="prompt" placeholder="请输入测试prompt">
+          <template slot="append">
+            <el-button @click="onSubmit">测试</el-button>
+          </template>
+        </el-input>
+      </div>
     </div>
-    <component :is="compName" :initTableData="helloTableParams.data" :tableHeader="helloTableParams.columns"
-      :canEdit="helloTableParams.canEdit" :canDelete="helloTableParams.canDelete" />
+    <component
+      :is="compName"
+      :initTableData="helloTableParams.data"
+      :tableHeader="helloTableParams.columns"
+      :canEdit="helloTableParams.canEdit"
+      :canDelete="helloTableParams.canDelete"
+    />
+
+    <!-- 初始化apiKey -->
+    <el-dialog
+      title="初始化AI助手"
+      :visible.sync="apiKeyDialogShow"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="false"
+    >
+      <el-input v-model="apiKey" placeholder="请输入ApiKey"></el-input>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="initOpenAI">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -40,6 +56,7 @@ export default {
       historyInput: [],
       currentInput: "",
       apiKey: "",
+      apiKeyDialogShow: true,
       prompt: "",
       compDSL: "",
       compName: "",
@@ -47,14 +64,18 @@ export default {
       openai: null,
     };
   },
-  mounted() {
-    const configuration = new Configuration({
-      apiKey: '',
-    });
-    const openai = new OpenAIApi(configuration);
-    this.openai = openai;
-  },
   methods: {
+    /** 检查apiKey */
+    initOpenAI() {
+      if (this.apiKey) {
+        const configuration = new Configuration({
+          apiKey: this.apiKey,
+        });
+        const openai = new OpenAIApi(configuration);
+        this.openai = openai;
+        this.apiKeyDialogShow = false;
+      }
+    },
     generate(params) {
       // TODO: 调用AI接口生成
       const dsl = {
@@ -87,18 +108,17 @@ export default {
           model: "text-davinci-003",
           prompt: generatePrompt(this.prompt),
           temperature: 0,
-          max_tokens: 3000
+          max_tokens: 3000,
         });
 
         const params = eval(completion.data.choices[0].text);
 
         console.log(params);
-        this.generate(params[0].value)
+        this.generate(params[0].value);
       } catch (error) {
         console.error(error);
       }
     },
-    inputApiKey() {},
   },
 };
 </script>
