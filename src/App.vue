@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div id="input-area">
-      <p v-for="(item, idx) in historyInput" :key="idx">
+      <p v-for="(item, idx) in historyPrompt" :key="idx">
         {{ item }}
       </p>
       <el-input v-model="prompt" placeholder="请输入测试prompt">
@@ -50,8 +50,7 @@ export default {
   },
   data() {
     return {
-      historyInput: [],
-      currentInput: "",
+      historyPrompt: [],
       apiKey: "",
       apiKeyDialogShow: true,
       prompt: "",
@@ -96,8 +95,8 @@ export default {
         },
       };
 
-      this.historyInput.push(this.currentInput);
-      this.currentInput = "";
+      this.historyPrompt.push(this.prompt);
+      this.prompt = "";
       this.compName = dsl.comp;
       if (dsl.comp === "HelloTable") {
         // this.helloTableParams = dsl.params;

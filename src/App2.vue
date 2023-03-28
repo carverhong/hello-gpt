@@ -1,10 +1,10 @@
 <template>
   <div id="app">
     <div id="input-area">
-      <p v-for="(item, idx) in historyInput" :key="idx">
+      <p v-for="(item, idx) in historyPrompt" :key="idx">
         {{ item }}
       </p>
-      <el-input v-model="currentInput" placeholder="请输入prompt">
+      <el-input v-model="prompt" placeholder="请输入prompt">
         <template slot="append">
           <el-button @click="onSubmit" v-loading.fullscreen.lock="loading"
             >生成组件</el-button
@@ -49,8 +49,8 @@ export default {
   },
   data() {
     return {
-      historyInput: [],
-      currentInput: "",
+      historyPrompt: [],
+      prompt: "",
       apiKey: "",
       apiKeyDialogShow: true,
       compDSL: "",
@@ -106,8 +106,8 @@ export default {
 
     /** 渲染组件 */
     generate(params) {
-      this.historyInput.push(this.currentInput);
-      this.currentInput = "";
+      this.historyPrompt.push(this.prompt);
+      this.prompt = "";
       this.compName = "HelloTable";
       this.helloTableParams = params.params;
     },
