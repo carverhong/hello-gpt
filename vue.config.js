@@ -27,6 +27,7 @@ module.exports = defineConfig({
         console.log('=========> /createCompletion');
         const item = openAI[req.body.sessionId];
         if (!item) {
+          console.log('<========= /createCompletion 实例不存在');
           res.json({ status: 1, err: '实例不存在' });
           return;
         }
@@ -41,6 +42,30 @@ module.exports = defineConfig({
           res.json({ status: 0, completion: output.data });
         }, err => {
           console.log('<========= /createCompletion', err);
+          res.json({ status: 1, err: err.message });
+        });
+      });
+
+      // 调用createChatCompletion
+      devServer.app.post('/createChatCompletion', (req, res) => {
+        console.log('=========> /createChatCompletion');
+        const item = openAI[req.body.sessionId];
+        if (!item) {
+          console.log('<========= /createChatCompletion 实例不存在');
+          res.json({ status: 1, err: '实例不存在' });
+          return;
+        }
+
+        openAI[req.body.sessionId].createChatCompletion({
+          model: "gpt-3.5-turbo",
+          messages: req.body.messages,
+          max_tokens: 1024,
+          temperature: 0.8,
+        }).then(output => {
+          console.log('<========= /createChatCompletion', output.data);
+          res.json({ status: 0, completion: output.data });
+        }, err => {
+          console.log('<========= /createChatCompletion', err);
           res.json({ status: 1, err: err.message });
         });
       });

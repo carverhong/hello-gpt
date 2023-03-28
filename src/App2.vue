@@ -6,16 +6,9 @@
       </p>
       <el-input v-model="currentInput" placeholder="请输入prompt">
         <template slot="append">
-          <el-button @click="generate">生成组件</el-button>
+          <el-button @click="onSubmit">生成组件</el-button>
         </template>
       </el-input>
-      <div style="margin-top: 15px">
-        <el-input v-model="prompt" placeholder="请输入测试prompt">
-          <template slot="append">
-            <el-button @click="onSubmit">测试</el-button>
-          </template>
-        </el-input>
-      </div>
     </div>
     <component
       :is="compName"
@@ -43,7 +36,8 @@
 
 <script>
 import HelloTable from "./components/HelloTable.vue";
-import { generatePrompt } from "./utils/datasource";
+import { defaultMsg } from "./utils/datasource";
+import { convertOperationsToJSON } from "./utils/parseUtil";
 import axios from "axios";
 
 export default {
@@ -57,62 +51,64 @@ export default {
       currentInput: "",
       apiKey: "",
       apiKeyDialogShow: true,
-      prompt: "",
       compDSL: "",
       compName: "",
       helloTableParams: {},
+      sessionId: '',
+      loading: false,
+      message: [],
     };
   },
+  mounted() {
+    this.message = this.message.concat(defaultMsg);
+  },
   methods: {
-    /** 检查apiKey */
+    /** 初始化 */
     initOpenAI() {
       if (this.apiKey) {
         axios.post("/initOpenAI", { apiKey: this.apiKey }).then((res) => {
           if (res.data.status === 0) {
             this.apiKeyDialogShow = false;
+            this.sessionId = res.data.sessionId;
           }
         });
       }
     },
-    generate(params) {
-      // TODO: 调用AI接口生成
-      const dsl = {
-        comp: "HelloTable",
-        params: {
-          tableHeader: ["name", "age", "gender", "address"],
-          tableData: [
-            { name: "John", age: 18, gender: "Male", address: "New York" },
-            { name: "Jane", age: 22, gender: "Female", address: "London" },
-            { name: "Bob", age: 32, gender: "Male", address: "Paris" },
-            { name: "Tom", age: 24, gender: "Male", address: "Tokyo" },
-          ],
-          canEdit: true,
-          canDelete: true,
-        },
-      };
 
-      this.historyInput.push(this.currentInput);
-      this.currentInput = "";
-      this.compName = dsl.comp;
-      if (dsl.comp === "HelloTable") {
-        // this.helloTableParams = dsl.params;
-        this.helloTableParams = params;
-      }
-    },
+    /** 生成组件 */
     async onSubmit(event) {
       event.preventDefault();
-      const res = await axios.post("/createCompletion", {
-        prompt: generatePrompt(this.prompt),
+      this.loading = true;
+      this.message.push({
+        content: this.prompt + "，默认按照上一个示例来生成JSON数据",
+        role: "user",
+      });
+
+      const res = await axios.post("/createChatCompletion", {
+        sessionId: this.sessionId,
+        messages: this.message,
       });
       if (res.data.status === 0) {
-        const params = eval(res.data.completion.choices[0].text);
-
-        console.log(params);
+        console.log(res.data.completion.choices[0].message.content);
+        const params = convertOperationsToJSON(
+          res.data.completion.choices[0].message.content
+        );
+        console.log("params:", params);
         this.generate(params[0].value);
+        this.loading = false;
       } else {
         console.log(res.err);
+        this.loading = false;
       }
     },
+
+    /** 渲染组件 */
+    generate(params) {
+      this.historyInput.push(this.currentInput);
+      this.currentInput = "";
+      this.compName = "HelloTable";
+      this.helloTableParams = params.params;
+    }
   },
 };
 </script>
