@@ -138,6 +138,7 @@ export default {
         this.loading = false;
       } catch (error) {
         console.error(error);
+        this.$message.error(error.message);
         this.loading = false;
       }
     },

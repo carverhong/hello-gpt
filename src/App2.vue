@@ -99,7 +99,8 @@ export default {
         this.generate(params[0].value);
         this.loading = false;
       } else {
-        console.log(res.err);
+        console.log(res.data.err);
+        this.$message.error(res.data.err);
         this.loading = false;
       }
     },
