@@ -1,36 +1,68 @@
-// const msg1 = {
-//     comp: "HelloTable",
-//     params: {
-//         tableHeader: [
-//             { key: "name", value: "姓名" },
-//             { key: "age", value: "年龄" },
-//             { key: "gender", value: "性别" },
-//             { key: "address", value: "地址" }
-//         ],
-//         tableData: [
-//             { name: "John", age: 18, gender: "Male", address: "New York" },
-//             { name: "Jane", age: 22, gender: "Female", address: "London" },
-//             { name: "Bob", age: 32, gender: "Male", address: "Paris" },
-//             { name: "Tom", age: 24, gender: "Male", address: "Tokyo" },
-//         ],
-//         canEdit: true,
-//         canDelete: true,
-//     },
-// }
-// const msg2 = {
-//     comp: "HelloTable",
-//     params: {
-//         tableHeader: ["name", "age", "gender", "class", "totalScore"],
-//         tableData: [
-//             { name: "John", age: 18, gender: "Male", class: "三年一班", totalScore: 396 },
-//             { name: "Jane", age: 22, gender: "Female", class: "三年一班", totalScore: 481 },
-//             { name: "Bob", age: 32, gender: "Male", class: "三年二班", totalScore: 431 },
-//             { name: "Tom", age: 24, gender: "Male", class: "三年三班", totalScore: 412 },
-//         ],
-//         canEdit: true,
-//         canDelete: true,
-//     },
-// }
+export const msg1 = {
+    "tag": "div",
+    "class": "admin-panel",
+    "children": [
+        {
+            "tag": "h1",
+            "text": "Welcome to the Admin Panel"
+        },
+        {
+            "tag": "div",
+            "class": "user-list",
+            "children": [
+                {
+                    "tag": "h2",
+                    "text": "Users"
+                },
+                {
+                    "tag": "ul",
+                    "children": [
+                        {
+                            "tag": "li",
+                            "repeat": "user in users",
+                            "text": "{{ user.name }}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "tag": "div",
+            "class": "product-list",
+            "children": [
+                {
+                    "tag": "h2",
+                    "text": "Products"
+                },
+                {
+                    "tag": "ul",
+                    "children": [
+                        {
+                            "tag": "li",
+                            "repeat": "product in products",
+                            "text": "{{ product.name }} - ${{ product.price }}"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+
+export const msg2 = {
+    comp: "HelloTable",
+    params: {
+        tableHeader: ["name", "age", "gender", "class", "totalScore"],
+        tableData: [
+            { name: "John", age: 18, gender: "Male", class: "三年一班", totalScore: 396 },
+            { name: "Jane", age: 22, gender: "Female", class: "三年一班", totalScore: 481 },
+            { name: "Bob", age: 32, gender: "Male", class: "三年二班", totalScore: 431 },
+            { name: "Tom", age: 24, gender: "Male", class: "三年三班", totalScore: 412 },
+        ],
+        canEdit: true,
+        canDelete: true,
+    },
+}
 
 export function generatePrompt(val) {
     return `你现在是一个页面开发助手，你负责把我的需求转换成JSON配置数据的操作代码（使用JSONPatch描述），Important note: You simply return an array of JsonPatches
@@ -197,7 +229,7 @@ export const messages = (msg) => {
 export const defaultMsg = [
     {
         "role": "system",
-        "content": "你现在是一个页面开发助手，你负责把我的需求转换成JSON配置数据的操作代码，使用JavaScript语言的JSONPatch描述，并且接下来的发言你只需要告诉我你的操作代码，不需要任何描述"
+        "content": "你现在是一个页面开发助手，你负责把我的需求转换成JSON格式的DSL（使用JSON描述）"
     },
     {
         "role": "user",
@@ -205,36 +237,51 @@ export const defaultMsg = [
         使用json来描述一个页面，例如：
 
         {
-            comp: "HelloTable",
-            params: {
-                tableHeader: [
-                    {key: "name", value: "姓名"}, 
-                    {key: "age", value: "年龄"}, 
-                    {key: "gender", value: "性别"}, 
-                    {key: "address", value: "地址"}
-                ],
-                tableData: [
-                    { name: "John", age: 18, gender: "Male", address: "New York" },
-                    { name: "Jane", age: 22, gender: "Female", address: "London" },
-                    { name: "Bob", age: 32, gender: "Male", address: "Paris" },
-                    { name: "Tom", age: 24, gender: "Male", address: "Tokyo" },
-                ],
-                canEdit: true,
-                canDelete: true,
-            },
-        }
-        
+            tag: 'div',
+            children: [
+              {
+                tag: 'h1',
+                text: 'Welcome to the Admin Panel'
+              },
+              {
+                tag: 'div',
+                children: [
+                  {
+                    tag: 'p',
+                    text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vitae mi nec enim faucibus interdum. Sed malesuada arcu velit, quis varius urna fermentum vel.'
+                  }
+                ]
+              },
+              {
+                tag: 'div',
+                children: [
+                  {
+                    tag: 'h2',
+                    text: 'Recent Posts'
+                  },
+                  {
+                    tag: 'ul',
+                    children: [
+                      {
+                        tag: 'li',
+                        text: 'Post 1'
+                      },
+                      {
+                        tag: 'li',
+                        text: 'Post 2'
+                      },
+                      {
+                        tag: 'li',
+                        text: 'Post 3'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          };
 
-        其中comp属性代表这个页面的根组件及其参数，comp参数指定组件的类型（只能选HelloTable），params是type所指定组件需要的参数。
-        
-        以下是各个组件的参数说明： 
-        HelloTable: 表格组件
-        tableHeader： 表格的表头，它是一个数组类型，数组中的每个元素是一个对象，对象中有两个属性：key和value，key是表头的key，value是表头的显示值
-        tableData: 表格的数据，它是一个数组类型
-        canEdit: 是否可以编辑
-        canDelete: 是否可以删除
-
-        接下来以上面的示例页面配置为例，我们来做一些演练。
+        接下来以上面的示例页面为例，我们来做一些演练。
         `
     },
     {
