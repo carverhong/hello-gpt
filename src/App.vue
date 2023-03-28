@@ -39,7 +39,8 @@
 <script>
 import HelloTable from "./components/HelloTable.vue";
 import { Configuration, OpenAIApi } from "openai";
-import { defaultMsg, generatePrompt } from "./utils/datasource";
+import { defaultMsg } from "./utils/datasource";
+// import { generatePrompt } from "./utils/datasource";
 import { convertOperationsToJSON } from "./utils/parseUtil";
 
 export default {
