@@ -45,7 +45,7 @@ export default {
     return {
       historyInput: [],
       currentInput: "",
-      apiKey: "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",
+      apiKey: "",
       apiKeyDialogShow: true,
       prompt: "",
       compDSL: "",
@@ -54,6 +54,7 @@ export default {
       openai: null,
       loading: false,
       message: [],
+      json: {}
     };
   },
   mounted() {
@@ -101,24 +102,24 @@ export default {
       try {
         this.loading = true
         this.message.push({ content: this.prompt + '，默认按照上一个示例来生成JSON数据', role: "user" });
-        // const completion = await this.openai.createChatCompletion({
-        //   model: "gpt-3.5-turbo",
-        //   messages: this.message,
-        //   max_tokens: 1024,
-        //   temperature: 0.8
-        // });
-        // console.log(completion.data.choices[0].message.content);
-        // const params = this.convertOperationsToJSON(completion.data.choices[0].message.content);
-
-        const completion = await this.openai.createCompletion({
-          model: "text-davinci-002",
-          prompt: generatePrompt(this.prompt),
-          max_tokens: 2048,
-          temperature: 0.8,
+        const completion = await this.openai.createChatCompletion({
+          model: "gpt-3.5-turbo",
+          messages: this.message,
+          max_tokens: 1024,
+          temperature: 0.8
         });
+        console.log(completion.data.choices[0].message.content);
+        const params = this.convertOperationsToJSON(completion.data.choices[0].message.content);
 
-        console.log(completion.data.choices[0].text);
-        const params = this.convertOperationsToJSON(completion.data.choices[0].text);
+        // const completion = await this.openai.createCompletion({
+        //   model: "code-davinci-002",
+        //   prompt: generatePrompt(this.prompt),
+        //   max_tokens: 2048,
+        //   temperature: 0.8,
+        // });
+
+        // console.log(completion.data.choices[0].text);
+        // const params = this.convertOperationsToJSON(completion.data.choices[0].text);
 
         console.log('params:', params);
 
@@ -129,48 +130,11 @@ export default {
         this.loading = false
       }
     },
-    // convertOperationsToJSON(operations) {
-    //   let json = {};
-
-    //   if (typeof operations === 'string') {
-    //     operations = eval(operations);
-    //   }
-    //   for (const operation of operations) {
-    //     const path = operation.path.substring(1).split('/');
-    //     let current = json;
-
-    //     if (path.length === 0) {
-    //       json = operation.value;
-    //       continue;
-    //     }
-
-    //     for (let i = 0; i < path.length; i++) {
-    //       const key = path[i];
-    //       const isLastKey = i === path.length - 1;
-    //       const value = isLastKey ? operation.value : {};
-
-    //       if (operation.op === 'add') {
-    //         if (isLastKey) {
-    //           current[key] = value;
-    //         } else if (!current[key]) {
-    //           current[key] = {};
-    //         }
-
-    //         current = current[key];
-    //       } else {
-    //         delete current[key];
-    //       }
-    //     }
-    //   }
-
-    //   return json;
-    // },
     convertOperationsToJSON(operations) {
-      let json = {};
+      let json = this.json;
+      operations = this.extractJSON(operations);
 
-      if (typeof operations === 'string') {
-        operations = eval(operations);
-      }
+      console.log('operations: ', operations);
 
       for (const operation of operations) {
         const path = operation.path.substring(1).split('/');
@@ -193,15 +157,64 @@ export default {
             }
 
             current = current[key];
-          } else {
+          } else if (operation.op === 'replace') {
+            if (isLastKey) {
+              current[key] = value;
+            } else if (current[key]) {
+              current = current[key];
+            } else {
+              break;
+            }
+          } else if (operation.op === 'remove') {
             delete current[key];
+            break;
           }
         }
       }
 
       return json;
-    }
+    },
+    // 过滤中文
+    filterJsonPatch(str) {
+      const patchArr = [];
 
+      const jsonStr = str.replace(/[\u4e00-\u9fa5]/g, '').replace(/[^a-zA-Z0-9{}\[\]\/\-,._]/g, '');
+
+      console.log(jsonStr);
+
+      try {
+        const parsed = JSON.parse(jsonStr);
+
+        if (Array.isArray(parsed)) {
+          parsed.forEach((item) => {
+            if (item.op && item.path && item.value) {
+              patchArr.push(item);
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Error parsing JSON:', err);
+      }
+
+      return patchArr;
+    },
+    // extractJSON(input) {
+    //   const regex = /^\s*\[(.*)\]\s*$/s;
+    //   const match = input.match(regex);
+    //   if (match) {
+    //     return match[1];
+    //   }
+    //   return null;
+    // },
+    extractJSON(input) {
+      const regex = /\[([\s\S]+)\]/; // 匹配最外层的中括号及其中的内容
+      const match = input.match(regex); // 在输入中搜索匹配项
+      if (match) {
+        return eval(`[${match[1]}]`); // 返回匹配项中的第一个子表达式（即中括号内的内容）
+      } else {
+        return null; // 如果未找到匹配项，则返回 null
+      }
+    }
 
   },
 };
