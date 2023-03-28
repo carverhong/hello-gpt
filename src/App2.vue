@@ -6,7 +6,9 @@
       </p>
       <el-input v-model="currentInput" placeholder="请输入prompt">
         <template slot="append">
-          <el-button @click="onSubmit">生成组件</el-button>
+          <el-button @click="onSubmit" v-loading.fullscreen.lock="loading"
+            >生成组件</el-button
+          >
         </template>
       </el-input>
     </div>
@@ -54,7 +56,7 @@ export default {
       compDSL: "",
       compName: "",
       helloTableParams: {},
-      sessionId: '',
+      sessionId: "",
       loading: false,
       message: [],
     };
@@ -108,7 +110,7 @@ export default {
       this.currentInput = "";
       this.compName = "HelloTable";
       this.helloTableParams = params.params;
-    }
+    },
   },
 };
 </script>

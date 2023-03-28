@@ -1,11 +1,28 @@
 <template>
   <div>
-    <el-table v-loading="loading" :data="tableData" style="width: 100%">
-      <el-table-column v-for="(item, idx) in tableHeader" :key="idx" :prop="item.key" :label="item.key"></el-table-column>
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column
+        v-for="(item, idx) in tableHeader"
+        :key="idx"
+        :prop="item.key"
+        :label="item.key"
+      ></el-table-column>
       <el-table-column label="Operations" v-if="canEdit || canDelete">
         <template slot-scope="scope">
-          <el-button v-if="canEdit" type="primary" size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-          <el-button v-if="canDelete" type="danger" size="mini" @click="handleDelete(scope.$index)">删除</el-button>
+          <el-button
+            v-if="canEdit"
+            type="primary"
+            size="mini"
+            @click="handleEdit(scope.$index, scope.row)"
+            >编辑</el-button
+          >
+          <el-button
+            v-if="canDelete"
+            type="danger"
+            size="mini"
+            @click="handleDelete(scope.$index)"
+            >删除</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
@@ -34,53 +51,49 @@
 
 <script>
 export default {
-  name: 'HelloTable',
+  name: "HelloTable",
   props: {
     tableHeader: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     initTableData: {
       type: Array,
-      default: () => ([])
+      default: () => [],
     },
     canEdit: {
       type: Boolean,
-      default: () => false
+      default: () => false,
     },
     canDelete: {
       type: Boolean,
-      default: () => false
+      default: () => false,
     },
-    loading: {
-      type: Boolean,
-      default: () => false
-    }
   },
   data() {
     return {
       tableData: this.initTableData,
       editDialogVisible: false,
       editedData: {},
-    }
+    };
   },
   methods: {
     handleEdit(index, row) {
-      this.editedData = Object.assign({}, row)
-      this.editDialogVisible = true
+      this.editedData = Object.assign({}, row);
+      this.editDialogVisible = true;
     },
     handleDelete(index) {
-      this.tableData.splice(index, 1)
+      this.tableData.splice(index, 1);
     },
     handleSave() {
-      const index = this.tableData.indexOf(this.editedData)
+      const index = this.tableData.indexOf(this.editedData);
       if (index > -1) {
-        Object.assign(this.tableData[index], this.editedData)
+        Object.assign(this.tableData[index], this.editedData);
       } else {
-        this.tableData.push(this.editedData)
+        this.tableData.push(this.editedData);
       }
-      this.editDialogVisible = false
-    }
-  }
-}
+      this.editDialogVisible = false;
+    },
+  },
+};
 </script>

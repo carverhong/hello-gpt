@@ -4,18 +4,13 @@
       <p v-for="(item, idx) in historyInput" :key="idx">
         {{ item }}
       </p>
-      <el-input v-model="currentInput" placeholder="请输入prompt">
+      <el-input v-model="prompt" placeholder="请输入测试prompt">
         <template slot="append">
-          <el-button @click="generate">生成组件</el-button>
+          <el-button @click="onSubmit" v-loading.fullscreen.lock="loading"
+            >测试</el-button
+          >
         </template>
       </el-input>
-      <div style="margin-top: 15px">
-        <el-input v-model="prompt" placeholder="请输入测试prompt">
-          <template slot="append">
-            <el-button @click="onSubmit">测试</el-button>
-          </template>
-        </el-input>
-      </div>
     </div>
     <component
       :is="compName"
@@ -23,7 +18,6 @@
       :tableHeader="helloTableParams.tableHeader"
       :canEdit="helloTableParams.canEdit"
       :canDelete="helloTableParams.canDelete"
-      :loading="loading"
     />
 
     <!-- 初始化apiKey -->

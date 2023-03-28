@@ -41,7 +41,7 @@ module.exports = defineConfig({
           console.log('<========= /createCompletion', output.data);
           res.json({ status: 0, completion: output.data });
         }, err => {
-          console.log('<========= /createCompletion', err);
+          console.log('<========= /createCompletion', err.message);
           res.json({ status: 1, err: err.message });
         });
       });
@@ -65,7 +65,7 @@ module.exports = defineConfig({
           console.log('<========= /createChatCompletion', output.data);
           res.json({ status: 0, completion: output.data });
         }, err => {
-          console.log('<========= /createChatCompletion', err);
+          console.log('<========= /createChatCompletion', err.message);
           res.json({ status: 1, err: err.message });
         });
       });
