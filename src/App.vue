@@ -17,22 +17,12 @@
         </el-input>
       </div>
     </div>
-    <component
-      :is="compName"
-      :initTableData="helloTableParams.data"
-      :tableHeader="helloTableParams.columns"
-      :canEdit="helloTableParams.canEdit"
-      :canDelete="helloTableParams.canDelete"
-    />
+    <component :is="compName" :initTableData="helloTableParams.tableData" :tableHeader="helloTableParams.tableHeader"
+      :canEdit="helloTableParams.canEdit" :canDelete="helloTableParams.canDelete" :loading="loading" />
 
     <!-- 初始化apiKey -->
-    <el-dialog
-      title="初始化AI助手"
-      :visible.sync="apiKeyDialogShow"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      :show-close="false"
-    >
+    <el-dialog title="初始化AI助手" :visible.sync="apiKeyDialogShow" :close-on-click-modal="false"
+      :close-on-press-escape="false" :show-close="false">
       <el-input v-model="apiKey" placeholder="请输入ApiKey"></el-input>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="initOpenAI">确 定</el-button>
@@ -44,7 +34,7 @@
 <script>
 import HelloTable from "./components/HelloTable.vue";
 import { Configuration, OpenAIApi } from "openai";
-import { generatePrompt } from "./utils/datasource";
+import { defaultMsg, generatePrompt } from "./utils/datasource";
 
 export default {
   name: "app",
@@ -55,14 +45,19 @@ export default {
     return {
       historyInput: [],
       currentInput: "",
-      apiKey: "",
+      apiKey: "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",
       apiKeyDialogShow: true,
       prompt: "",
       compDSL: "",
       compName: "",
       helloTableParams: {},
       openai: null,
+      loading: false,
+      message: [],
     };
+  },
+  mounted() {
+    this.message = this.message.concat(defaultMsg)
   },
   methods: {
     /** 检查apiKey */
@@ -98,27 +93,116 @@ export default {
       this.compName = dsl.comp;
       if (dsl.comp === "HelloTable") {
         // this.helloTableParams = dsl.params;
-        this.helloTableParams = params;
+        this.helloTableParams = params.params;
       }
     },
     async onSubmit(event) {
       event.preventDefault();
       try {
+        this.loading = true
+        this.message.push({ content: this.prompt + '，默认按照上一个示例来生成JSON数据', role: "user" });
+        // const completion = await this.openai.createChatCompletion({
+        //   model: "gpt-3.5-turbo",
+        //   messages: this.message,
+        //   max_tokens: 1024,
+        //   temperature: 0.8
+        // });
+        // console.log(completion.data.choices[0].message.content);
+        // const params = this.convertOperationsToJSON(completion.data.choices[0].message.content);
+
         const completion = await this.openai.createCompletion({
-          model: "text-davinci-003",
+          model: "text-davinci-002",
           prompt: generatePrompt(this.prompt),
-          temperature: 0,
-          max_tokens: 3000,
+          max_tokens: 2048,
+          temperature: 0.8,
         });
 
-        const params = eval(completion.data.choices[0].text);
+        console.log(completion.data.choices[0].text);
+        const params = this.convertOperationsToJSON(completion.data.choices[0].text);
 
-        console.log(params);
-        this.generate(params[0].value);
+        console.log('params:', params);
+
+        this.generate(params);
+        this.loading = false
       } catch (error) {
         console.error(error);
+        this.loading = false
       }
     },
+    // convertOperationsToJSON(operations) {
+    //   let json = {};
+
+    //   if (typeof operations === 'string') {
+    //     operations = eval(operations);
+    //   }
+    //   for (const operation of operations) {
+    //     const path = operation.path.substring(1).split('/');
+    //     let current = json;
+
+    //     if (path.length === 0) {
+    //       json = operation.value;
+    //       continue;
+    //     }
+
+    //     for (let i = 0; i < path.length; i++) {
+    //       const key = path[i];
+    //       const isLastKey = i === path.length - 1;
+    //       const value = isLastKey ? operation.value : {};
+
+    //       if (operation.op === 'add') {
+    //         if (isLastKey) {
+    //           current[key] = value;
+    //         } else if (!current[key]) {
+    //           current[key] = {};
+    //         }
+
+    //         current = current[key];
+    //       } else {
+    //         delete current[key];
+    //       }
+    //     }
+    //   }
+
+    //   return json;
+    // },
+    convertOperationsToJSON(operations) {
+      let json = {};
+
+      if (typeof operations === 'string') {
+        operations = eval(operations);
+      }
+
+      for (const operation of operations) {
+        const path = operation.path.substring(1).split('/');
+        let current = json;
+
+        for (let i = 0; i < path.length; i++) {
+          const key = path[i];
+          const isLastKey = i === path.length - 1;
+          const value = isLastKey ? operation.value : {};
+
+          if (operation.op === 'add') {
+            if (path[i] === '') { // add root object
+              json = value;
+              break;
+            }
+            if (isLastKey) {
+              current[key] = value;
+            } else if (!current[key]) {
+              current[key] = {};
+            }
+
+            current = current[key];
+          } else {
+            delete current[key];
+          }
+        }
+      }
+
+      return json;
+    }
+
+
   },
 };
 </script>
