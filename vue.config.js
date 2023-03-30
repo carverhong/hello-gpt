@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 let openAI = [];
 
 module.exports = defineConfig({
+  runtimeCompiler: true,
   transpileDependencies: true,
   devServer: {
     onBeforeSetupMiddleware(devServer) {
