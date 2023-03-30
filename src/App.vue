@@ -33,6 +33,7 @@
         <el-button type="primary" @click="initOpenAI">确 定</el-button>
       </div>
     </el-dialog>
+<div id="result"></div>
   </div>
 </template>
 
@@ -40,8 +41,9 @@
 import HelloTable from "./components/HelloTable.vue";
 import { Configuration, OpenAIApi } from "openai";
 import { defaultMsg } from "./utils/datasource";
-// import { generatePrompt } from "./utils/datasource";
-import { convertOperationsToJSON } from "./utils/parseUtil";
+import { generateVueTemplate } from "./utils/patchToDSL"
+import jsonpatch from 'jsonpatch'
+import Vue from 'vue'
 
 export default {
   name: "app",
@@ -61,6 +63,7 @@ export default {
       loading: false,
       message: [],
       json: {},
+      content: {}
     };
   },
   mounted() {
@@ -114,34 +117,79 @@ export default {
         const completion = await this.openai.createChatCompletion({
           model: "gpt-3.5-turbo",
           messages: this.message,
-          max_tokens: 1024,
-          temperature: 0.8,
+          max_tokens: 2048,
+          temperature: 0.8
         });
-        console.log(completion.data.choices[0].message.content);
-        const params = convertOperationsToJSON(
-          completion.data.choices[0].message.content
-        );
+        const params = this.convertOperationsToJSON(completion.data.choices[0].message.content);
 
-        // const completion = await this.openai.createCompletion({
-        //   model: "code-davinci-002",
-        //   prompt: generatePrompt(this.prompt),
-        //   max_tokens: 2048,
-        //   temperature: 0.8,
-        // });
+        console.log('params:', params);
 
-        // console.log(completion.data.choices[0].text);
-        // const params = convertOperationsToJSON(completion.data.choices[0].text);
-
-        console.log("params:", params);
-
-        this.generate(params);
-        this.loading = false;
+        this.content = generateVueTemplate(params);
+        this.run()
+        console.log(this.content);
+        this.loading = false
       } catch (error) {
         console.error(error);
         this.$message.error(error.message);
         this.loading = false;
       }
     },
+    // 将jsonpatch转换为json
+    convertOperationsToJSON(operations) {
+      let json = this.json;
+      operations = this.extractJSON(operations);
+      json = jsonpatch.apply_patch(json, operations);
+
+      return json;
+    },
+    // 提取json
+    extractJSON(input) {
+      const regex = /\[([\s\S]+)\]/; // 匹配最外层的中括号及其中的内容
+      const match = input.match(regex); // 在输入中搜索匹配项
+      if (match) {
+        return eval(`[${match[1]}]`); // 返回匹配项中的第一个子表达式（即中括号内的内容）
+      } else {
+        return null; // 如果未找到匹配项，则返回 null
+      }
+    },
+    // 生成vue组件
+    run() {
+      let template = this.getSource("template");
+      if (!template) return
+
+      let script = this.getSource("script");
+      if (script) {
+        script = script.replace(/export default/, "return");
+      } else {
+        script = "return {}"
+      }
+      let styleCss = this.getSource("style");
+      let style = document.createElement("style");
+      style.innerHTML = styleCss;
+      document.head.appendChild(style);
+      // let obj = new Function(script)();
+      let obj = {};
+      obj.template = template;
+
+      // console.log(obj);
+      // 创建构造器
+      let Profile = Vue.extend(obj);
+      new Profile().$mount("#result")
+      // this.$refs.result.innerHTML = template;
+    },
+    getSource(type) {
+      const reg = new RegExp(`<${type}[^>]*>`);
+      let content = this.content;
+      let matches = content.match(reg);
+      if (matches) {
+        let start = content.indexOf(matches[0]) + matches[0].length;
+        let end = content.lastIndexOf(`</${type}`);
+        return content.slice(start, end)
+      }
+    },
+    reset() {
+      this.content = ''
+    }
   },
 };
 </script>
