@@ -234,59 +234,256 @@ export const defaultMsg = [
     {
         "role": "user",
         "content": `
-        使用json来描述一个页面，例如：
+        使用jsonPatch来描述一个页面，例如：
 
-        {
-            tag: 'div',
-            children: [
-              {
-                tag: 'h1',
-                text: 'Welcome to the Admin Panel'
-              },
-              {
-                tag: 'div',
-                children: [
-                  {
-                    tag: 'p',
-                    text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vitae mi nec enim faucibus interdum. Sed malesuada arcu velit, quis varius urna fermentum vel.'
-                  }
+        [
+            {
+                "op": "add",
+                "path": "/tag",
+                "value": "table"
+            },
+            {
+                "op": "add",
+                "path": "/children",
+                "value": [
+                    {
+                        "tag": "thead",
+                        "children": [
+                            {
+                                "tag": "tr",
+                                "children": [
+                                    {
+                                        "tag": "th",
+                                        "text": "姓名"
+                                    },
+                                    {
+                                        "tag": "th",
+                                        "text": "工号"
+                                    },
+                                    {
+                                        "tag": "th",
+                                        "text": "性别"
+                                    },
+                                    {
+                                        "tag": "th",
+                                        "text": "职级"
+                                    },
+                                    {
+                                        "tag": "th",
+                                        "text": "家庭住址"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "tag": "tbody",
+                        "children": [
+                            {
+                                "tag": "tr",
+                                "children": [
+                                    {
+                                        "tag": "td",
+                                        "text": "张三"
+                                    },
+                                    {
+                                        "tag": "td",
+                                        "text": "001"
+                                    },
+                                    {
+                                        "tag": "td",
+                                        "text": "男"
+                                    },
+                                    {
+                                        "tag": "td",
+                                        "text": "初级"
+                                    },
+                                    {
+                                        "tag": "td",
+                                        "text": "北京市朝阳区"
+                                    }
+                                ]
+                            },
+                            {
+                                "tag": "tr",
+                                "children": [
+                                    {
+                                        "tag": "td",
+                                        "text": "李四"
+                                    },
+                                    {
+                                        "tag": "td",
+                                        "text": "002"
+                                    },
+                                    {
+                                        "tag": "td",
+                                        "text": "女"
+                                    },
+                                    {
+                                        "tag": "td",
+                                        "text": "高级"
+                                    },
+                                    {
+                                        "tag": "td",
+                                        "text": "上海市浦东新区"
+                                    }
+                                ]
+                            },
+                            {
+                                "tag": "tr",
+                                "children": [
+                                    {
+                                        "tag": "td",
+                                        "text": "王五"
+                                    },
+                                    {
+                                        "tag": "td",
+                                        "text": "003"
+                                    },
+                                    {
+                                        "tag": "td",
+                                        "text": "男"
+                                    },
+                                    {
+                                        "tag": "td",
+                                        "text": "中级"
+                                    },
+                                    {
+                                        "tag": "td",
+                                        "text": "广州市天河区"
+                                    }
+                                ]
+                            },
+                        ]
+                    }
                 ]
-              },
-              {
-                tag: 'div',
-                children: [
-                  {
-                    tag: 'h2',
-                    text: 'Recent Posts'
-                  },
-                  {
-                    tag: 'ul',
-                    children: [
-                      {
-                        tag: 'li',
-                        text: 'Post 1'
-                      },
-                      {
-                        tag: 'li',
-                        text: 'Post 2'
-                      },
-                      {
-                        tag: 'li',
-                        text: 'Post 3'
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          };
+            }
+        ]
 
         接下来以上面的示例页面为例，我们来做一些演练。
         `
     },
     {
         "role": "user",
-        "content": "请不要有任何的中文描述，我只需要一个JSONPatch的数组"
+        "content": `
+            或者是这样的：
+
+            [
+                {
+                    "op": "add",
+                    "path": "/tag",
+                    "value": "table"
+                },
+                {
+                    "op": "add",
+                    "path": "/children",
+                    "value": [
+                        {
+                            "tag": "thead",
+                            "children": [
+                                {
+                                    "tag": "tr",
+                                    "children": [
+                                        {
+                                            "tag": "th",
+                                            "text": "姓名"
+                                        },
+                                        {
+                                            "tag": "th",
+                                            "text": "工号"
+                                        },
+                                        {
+                                            "tag": "th",
+                                            "text": "性别"
+                                        },
+                                        {
+                                            "tag": "th",
+                                            "text": "职级"
+                                        },
+                                        {
+                                            "tag": "th",
+                                            "text": "家庭住址"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "tag": "tbody",
+                            "children": [
+                                {
+                                    "tag": "tr",
+                                    "children": [
+                                        {
+                                            "tag": "td",
+                                            "text": "张三"
+                                        },
+                                        {
+                                            "tag": "td",
+                                            "text": "001"
+                                        },
+                                        {
+                                            "tag": "td",
+                                            "text": "男"
+                                        },
+                                        {
+                                            "tag": "td",
+                                            "text": "初级"
+                                        },
+                                        {
+                                            "tag": "td",
+                                            "text": "北京市朝阳区"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "tag": "tr",
+                                    "children": [
+                                        {
+                                            "tag": "td",
+                                            "text": "李四"
+                                        },
+                                        {
+                                            "tag": "td",
+                                            "text": "002"
+                                        },
+                                        {
+                                            "tag": "td",
+                                            "text": "女"
+                                        },
+                                        {
+                                            "tag": "td",
+                                            "text": "高级"
+                                        },
+                                        {
+                                            "tag": "td",
+                                            "text": "上海市浦东新区"
+                                        }
+                                    ]
+                                },
+                            ]
+                        }
+                    ]
+                }
+            ]
+        `
+    },
+    {
+        "role": "user",
+        "content": `
+            其中路径path一定要正确，不能有任何的错误，否则会报错。
+            比如说这样的路径就是错的："/children/1/children/-" ，这时因为在路径的最后有一个"-"，所以会报错。
+        `
+    },
+    {
+        "role": "user",
+        "content": `
+            请用ElementUI的Table组件来实现上面的表格。
+        `
+    },
+    {
+        "role": "user",
+        "content": "在接下来的对话中，请不要有任何的中文描述，我只需要一个JSONPatch的数组"
     },
 ]
 

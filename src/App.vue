@@ -41,7 +41,7 @@
 import HelloTable from "./components/HelloTable.vue";
 import { Configuration, OpenAIApi } from "openai";
 import { defaultMsg } from "./utils/datasource";
-import { generateVueTemplate } from "./utils/patchToDSL"
+import { generateTemplate } from "./utils/patchToDSL"
 import jsonpatch from 'jsonpatch'
 import Vue from 'vue'
 
@@ -111,22 +111,24 @@ export default {
       try {
         this.loading = true;
         this.message.push({
-          content: this.prompt + "，默认按照上一个示例来生成JSON数据",
           role: "user",
+          content: this.prompt
         });
         const completion = await this.openai.createChatCompletion({
           model: "gpt-3.5-turbo",
           messages: this.message,
           max_tokens: 2048,
-          temperature: 0.8
+          temperature: 0.2
         });
-        const params = this.convertOperationsToJSON(completion.data.choices[0].message.content);
+        console.log('content: ', completion.data.choices[0].message.content);
 
+        const params = this.convertOperationsToJSON(completion.data.choices[0].message.content);
         console.log('params:', params);
 
-        this.content = generateVueTemplate(params);
-        this.run()
+        this.content = generateTemplate(params);
         console.log(this.content);
+
+        this.run()
         this.loading = false
       } catch (error) {
         console.error(error);
@@ -138,6 +140,7 @@ export default {
     convertOperationsToJSON(operations) {
       let json = this.json;
       operations = this.extractJSON(operations);
+      console.log('operations: ', operations);
       json = jsonpatch.apply_patch(json, operations);
 
       return json;
@@ -175,7 +178,6 @@ export default {
       // 创建构造器
       let Profile = Vue.extend(obj);
       new Profile().$mount("#result")
-      // this.$refs.result.innerHTML = template;
     },
     getSource(type) {
       const reg = new RegExp(`<${type}[^>]*>`);
