@@ -6,34 +6,22 @@
       </p>
       <el-input v-model="prompt" placeholder="请输入测试prompt">
         <template slot="append">
-          <el-button @click="onSubmit" v-loading.fullscreen.lock="loading"
-            >测试</el-button
-          >
+          <el-button @click="onSubmit" v-loading.fullscreen.lock="loading">测试</el-button>
         </template>
       </el-input>
     </div>
-    <component
-      :is="compName"
-      :initTableData="helloTableParams.tableData"
-      :tableHeader="helloTableParams.tableHeader"
-      :canEdit="helloTableParams.canEdit"
-      :canDelete="helloTableParams.canDelete"
-    />
+    <component :is="compName" :initTableData="helloTableParams.tableData" :tableHeader="helloTableParams.tableHeader"
+      :canEdit="helloTableParams.canEdit" :canDelete="helloTableParams.canDelete" />
 
     <!-- 初始化apiKey -->
-    <el-dialog
-      title="初始化AI助手"
-      :visible.sync="apiKeyDialogShow"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      :show-close="false"
-    >
+    <el-dialog title="初始化AI助手" :visible.sync="apiKeyDialogShow" :close-on-click-modal="false"
+      :close-on-press-escape="false" :show-close="false">
       <el-input v-model="apiKey" placeholder="请输入ApiKey"></el-input>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="initOpenAI">确 定</el-button>
       </div>
     </el-dialog>
-<div id="result"></div>
+    <div id="result"></div>
   </div>
 </template>
 
@@ -41,7 +29,7 @@
 import HelloTable from "./components/HelloTable.vue";
 import { Configuration, OpenAIApi } from "openai";
 import { defaultMsg } from "./utils/datasource";
-import { generateTemplate } from "./utils/patchToDSL"
+import { transformSDLToVue } from "./utils/patchToDSL"
 import jsonpatch from 'jsonpatch'
 import Vue from 'vue'
 
@@ -63,7 +51,8 @@ export default {
       loading: false,
       message: [],
       json: {},
-      content: {}
+      content: {},
+      newsList: []
     };
   },
   mounted() {
@@ -81,31 +70,6 @@ export default {
         this.apiKeyDialogShow = false;
       }
     },
-    generate(params) {
-      // TODO: 调用AI接口生成
-      const dsl = {
-        comp: "HelloTable",
-        params: {
-          tableHeader: ["name", "age", "gender", "address"],
-          tableData: [
-            { name: "John", age: 18, gender: "Male", address: "New York" },
-            { name: "Jane", age: 22, gender: "Female", address: "London" },
-            { name: "Bob", age: 32, gender: "Male", address: "Paris" },
-            { name: "Tom", age: 24, gender: "Male", address: "Tokyo" },
-          ],
-          canEdit: true,
-          canDelete: true,
-        },
-      };
-
-      this.historyPrompt.push(this.prompt);
-      this.prompt = "";
-      this.compName = dsl.comp;
-      if (dsl.comp === "HelloTable") {
-        // this.helloTableParams = dsl.params;
-        this.helloTableParams = params.params;
-      }
-    },
     async onSubmit(event) {
       event.preventDefault();
       try {
@@ -118,15 +82,15 @@ export default {
           model: "gpt-3.5-turbo",
           messages: this.message,
           max_tokens: 2048,
-          temperature: 0.2
+          temperature: 0.2,
+          n: 1
         });
-        console.log('content: ', completion.data.choices[0].message.content);
 
+        // 将jsonpatch转换为json
         const params = this.convertOperationsToJSON(completion.data.choices[0].message.content);
-        console.log('params:', params);
 
-        this.content = generateTemplate(params);
-        console.log(this.content);
+        // 将json转换为vue组件
+        this.content = transformSDLToVue(params);
 
         this.run()
         this.loading = false
@@ -174,7 +138,6 @@ export default {
       let obj = {};
       obj.template = template;
 
-      // console.log(obj);
       // 创建构造器
       let Profile = Vue.extend(obj);
       new Profile().$mount("#result")

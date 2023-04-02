@@ -1,53 +1,29 @@
-export function generateVueTemplate(dsl) {
-    if (dsl[""]) {
-        dsl = dsl[""];
+function createElement(node) {
+    if (typeof node === 'string') {
+        return node;
     }
-    if (dsl["0"]) {
-        dsl = dsl["0"];
-    }
-    const generateElement = (element) => {
-        const children = element.children
-            ? element.children.map(generateElement).join("\n")
-            : "";
-        const text = element.text ? element.text : "";
-        return `<${element.tag}>${text}${children}</${element.tag}>`;
-    };
-
-    return `<template><div id="result">${generateElement(dsl)}</div></template><script>export default {}</script>`;
+    const { tag, props = [], children = [], on = {}, text = '' } = node;
+    console.log(children);
+    const propsString = Object.keys(props)
+        .map(key => {
+            if (key === 'data' || key === ':data') {
+                return `:data="list"`;
+            } else if (key.startsWith(':')) {
+                return `:${key.slice(1)}="${props[key]}"`;
+            } else {
+                return `${key}="${props[key]}"`;
+            }
+        })
+        .join(' ');
+    const onString = Object.keys(on)
+        .map(eventName => `@${eventName}="${on[eventName]}"`)
+        .join(' ');
+    const childrenString = Array.isArray(children) ? children.map(createElement).join('') : children;
+    const textString = text;
+    return `<${tag} ${propsString} ${onString}>${childrenString || textString}</${tag}>`;
 }
 
-export function generateTemplate(dslData) {
-    // 解析数据，取出需要生成的数据项
-    const { tag, props, children, data } = dslData;
-
-    // 生成 Vue 的模板代码
-    let templateCode = `<${tag}`;
-    if (props) {
-        for (let key in props) {
-            templateCode += ` ${key}="${props[key]}"`;
-        }
-    }
-    templateCode += '>\n';
-    if (children) {
-        for (let child of children) {
-            // 处理子节点是普通标签的情况
-            if (child.tag) {
-                templateCode += generateTemplate(child);
-            }
-            // 处理子节点是插槽的情况
-            else if (child.scopedSlots) {
-                for (let key in child.scopedSlots) {
-                    templateCode += `<template ${key}>\n`;
-                    for (let element of child.scopedSlots[key]) {
-                        templateCode += generateTemplate(element);
-                    }
-                    templateCode += `</template>\n`;
-                }
-            }
-        }
-    }
-    templateCode += `</${tag}>`;
-
-    // 返回生成的 Vue 模板代码
-    return templateCode;
+export function transformSDLToVue(sdl) {
+    const vueTemplate = createElement(sdl);
+    return ` <template><div id="result">${vueTemplate}</div></template><script>export default { data () { return { list: []}}}</script>`;
 }
