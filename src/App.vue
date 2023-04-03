@@ -41,10 +41,9 @@ export default {
   data() {
     return {
       historyPrompt: [],
-      apiKey: "",
+      apiKey: "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",
       apiKeyDialogShow: true,
       prompt: "",
-      compDSL: "",
       compName: "",
       helloTableParams: {},
       openai: null,
@@ -52,7 +51,7 @@ export default {
       message: [],
       json: {},
       content: {},
-      newsList: []
+      list: []
     };
   },
   mounted() {
@@ -88,9 +87,11 @@ export default {
 
         // 将jsonpatch转换为json
         const params = this.convertOperationsToJSON(completion.data.choices[0].message.content);
+        console.log('params ====>>>', params);
 
         // 将json转换为vue组件
         this.content = transformSDLToVue(params);
+        console.log('params ====>>>', this.content);
 
         this.run()
         this.loading = false
@@ -104,7 +105,8 @@ export default {
     convertOperationsToJSON(operations) {
       let json = this.json;
       operations = this.extractJSON(operations);
-      console.log('operations: ', operations);
+
+      console.log('json ===>>>', json);
       json = jsonpatch.apply_patch(json, operations);
 
       return json;

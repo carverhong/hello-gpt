@@ -3,7 +3,6 @@ function createElement(node) {
         return node;
     }
     const { tag, props = [], children = [], on = {}, text = '' } = node;
-    console.log(children);
     const propsString = Object.keys(props)
         .map(key => {
             if (key === 'data' || key === ':data') {
