@@ -89,6 +89,10 @@ export default {
       const res = await axios.post("/createChatCompletion", {
         sessionId: this.sessionId,
         messages: this.message,
+        model: "gpt-3.5-turbo",
+        max_tokens: 2048,
+        temperature: 0.2,
+        n: 1,
       });
       if (res.data.status === 0) {
         console.log(res.data.completion.choices[0].message.content);
