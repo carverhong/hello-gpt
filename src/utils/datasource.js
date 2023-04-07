@@ -59,20 +59,8 @@ export const defaultMsg = [
                 ]
             }
         ]
-        `
-    },
-    {
-        "role": "user",
-        "content": `
-            请用ElementUI的组件来实现。
-        `
-    },
-    {
-        "role": "user",
-        "content": `
-            其中路径path一定要正确，不能有任何的错误，否则会报错。
-            比如说这样的路径就是错的："/children/1/children/-" ，这时因为在路径的最后有一个"-"，所以会报错。
-            并且这个JSONPatch是可以被JSONPatch的库解析的
+        请用ElementUI的组件来实现。
+        其中路径path一定要正确，不能有任何的错误，否则会报错。并且这个JSONPatch是可以被JSONPatch的库解析的
         `
     },
 ]

@@ -10,8 +10,6 @@
         </template>
       </el-input>
     </div>
-    <component :is="compName" :initTableData="helloTableParams.tableData" :tableHeader="helloTableParams.tableHeader"
-      :canEdit="helloTableParams.canEdit" :canDelete="helloTableParams.canDelete" />
 
     <!-- 初始化apiKey -->
     <el-dialog title="初始化AI助手" :visible.sync="apiKeyDialogShow" :close-on-click-modal="false"
@@ -26,7 +24,6 @@
 </template>
 
 <script>
-import HelloTable from "./components/HelloTable.vue";
 import { Configuration, OpenAIApi } from "openai";
 import { defaultMsg } from "./utils/datasource";
 import { transformSDLToVue } from "./utils/patchToDSL"
@@ -35,23 +32,18 @@ import Vue from 'vue'
 
 export default {
   name: "app",
-  components: {
-    HelloTable,
-  },
   data() {
     return {
       historyPrompt: [],
       apiKey: "",
       apiKeyDialogShow: true,
       prompt: "",
-      compName: "",
-      helloTableParams: {},
       openai: null,
       loading: false,
       message: [],
       json: {},
       content: {},
-      list: []
+      isShow: false
     };
   },
   mounted() {
@@ -91,10 +83,11 @@ export default {
 
         // 将json转换为vue组件
         this.content = transformSDLToVue(params);
-        console.log('params ====>>>', this.content);
+        console.log('content ====>>>', this.content);
 
         this.run()
         this.loading = false
+        this.isShow = true
       } catch (error) {
         console.error(error);
         this.$message.error(error.message);
@@ -137,7 +130,19 @@ export default {
       style.innerHTML = styleCss;
       document.head.appendChild(style);
       // let obj = new Function(script)();
-      let obj = {};
+      let obj = {
+        data: () => {
+          return {
+            list: [{
+              title: '标题标题标题1',
+              date: '2021-01-01',
+            }, {
+              title: '标题标题标题2',
+              date: '2021-01-02',
+            }]
+          }
+        }
+      };
       obj.template = template;
 
       // 创建构造器
