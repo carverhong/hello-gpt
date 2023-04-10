@@ -41,7 +41,7 @@ export default {
   data() {
     return {
       historyPrompt: [],
-      apiKey: "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",
+      apiKey: "",
       apiKeyDialogShow: true,
       prompt: "",
       openai: null,
