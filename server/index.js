@@ -10,12 +10,21 @@ app.use(bodyParser.json());
 
 app.post('/initOpenAI', function (req, res) {
     console.log('=========> /initOpenAI');
+    for (let i = 0; i < openAI.length; ++i) {
+        if (openAI[i].configuration.apiKey === req.body.apiKey) {
+            res.json({ status: 0, sessionId: i });
+            console.log('<========= /initOpenAI, sessionId=' + i);
+            return;
+        }
+    }
+
     const configuration = new Configuration({
         apiKey: req.body.apiKey,
     });
     openAI.push(new OpenAIApi(configuration));
-    res.json({ status: 0, sessionId: openAI.length - 1 });
-    console.log('<========= /initOpenAI');
+    const id = openAI.length - 1;
+    res.json({ status: 0, sessionId: id });
+    console.log('<========= /initOpenAI, sessionId=' + id);
 });
 
 app.post('/createCompletion', (req, res) => {
