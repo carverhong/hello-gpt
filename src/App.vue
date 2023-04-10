@@ -19,7 +19,9 @@
         <el-button type="primary" @click="initOpenAI">确 定</el-button>
       </div>
     </el-dialog>
-    <div id="result"></div>
+    <el-template v-show="isShow">
+      <div id="result"></div>
+    </el-template>
   </div>
 </template>
 
@@ -29,13 +31,17 @@ import { defaultMsg } from "./utils/datasource";
 import { transformSDLToVue } from "./utils/patchToDSL"
 import jsonpatch from 'jsonpatch'
 import Vue from 'vue'
+import ElTemplate from './components/ElTemplate.vue';
 
 export default {
   name: "app",
+  components: {
+    ElTemplate
+  },
   data() {
     return {
       historyPrompt: [],
-      apiKey: "",
+      apiKey: "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",
       apiKeyDialogShow: true,
       prompt: "",
       openai: null,
@@ -43,7 +49,7 @@ export default {
       message: [],
       json: {},
       content: {},
-      isShow: false
+      isShow: false,
     };
   },
   mounted() {
@@ -73,7 +79,7 @@ export default {
           model: "gpt-3.5-turbo",
           messages: this.message,
           max_tokens: 2048,
-          temperature: 0.2,
+          temperature: 1,
           n: 1
         });
 
@@ -161,7 +167,7 @@ export default {
     },
     reset() {
       this.content = ''
-    }
+    },
   },
 };
 </script>
