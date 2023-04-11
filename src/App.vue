@@ -26,12 +26,12 @@
 </template>
 
 <script>
-import { Configuration, OpenAIApi } from "openai";
 import { defaultMsg } from "./utils/datasource";
 import { transformSDLToVue } from "./utils/patchToDSL"
 import jsonpatch from 'jsonpatch'
 import Vue from 'vue'
 import ElTemplate from './components/ElTemplate.vue';
+import axios from "axios";
 
 export default {
   name: "app",
@@ -50,6 +50,8 @@ export default {
       json: {},
       content: {},
       isShow: false,
+      list: [],
+      feData: {}
     };
   },
   mounted() {
@@ -59,12 +61,12 @@ export default {
     /** 检查apiKey */
     initOpenAI() {
       if (this.apiKey) {
-        const configuration = new Configuration({
-          apiKey: this.apiKey,
+        axios.post("/initOpenAI", { apiKey: this.apiKey }).then((res) => {
+          if (res.data.status === 0) {
+            this.apiKeyDialogShow = false;
+            this.sessionId = res.data.sessionId;
+          }
         });
-        const openai = new OpenAIApi(configuration);
-        this.openai = openai;
-        this.apiKeyDialogShow = false;
       }
     },
     async onSubmit(event) {
@@ -75,25 +77,37 @@ export default {
           role: "user",
           content: this.prompt
         });
-        const completion = await this.openai.createChatCompletion({
-          model: "gpt-3.5-turbo",
+        const res = await axios.post("/createChatCompletion", {
+          sessionId: this.sessionId,
           messages: this.message,
+          model: "gpt-3.5-turbo",
           max_tokens: 2048,
-          temperature: 1,
-          n: 1
+          temperature: 0.2,
+          n: 1,
         });
 
-        // 将jsonpatch转换为json
-        const params = this.convertOperationsToJSON(completion.data.choices[0].message.content);
-        console.log('params ====>>>', params);
+        if (res.data.status === 0) {
+          // 将jsonpatch转换为json
+          const params = this.convertOperationsToJSON(res.data.completion.choices[0].message.content);
+          console.log('params ====>>>', params);
 
-        // 将json转换为vue组件
-        this.content = transformSDLToVue(params);
-        console.log('content ====>>>', this.content);
+          // 将json转换为vue组件
+          const { template, feData } = transformSDLToVue(params);
+          this.content = template;
+          this.feData = feData;
+          console.log('content ====>>>', this.content);
 
-        this.run()
-        this.loading = false
-        this.isShow = true
+          // 将Vue组建渲染到页面上
+          this.run()
+          this.loading = false
+          this.isShow = true
+        } else {
+          console.log(res.data.err);
+          this.$message.error(res.data.err);
+          this.loading = false;
+        }
+
+
       } catch (error) {
         console.error(error);
         this.$message.error(error.message);
@@ -112,10 +126,14 @@ export default {
     },
     // 提取json
     extractJSON(input) {
+      const codeBlocks = input.match(/```([\s\S]*?)```/g);
+      const firstBlock = codeBlocks[0]
+
       const regex = /\[([\s\S]+)\]/; // 匹配最外层的中括号及其中的内容
-      const match = input.match(regex); // 在输入中搜索匹配项
+      const match = firstBlock.match(regex); // 在输入中搜索匹配项
       if (match) {
-        return eval(`[${match[1]}]`); // 返回匹配项中的第一个子表达式（即中括号内的内容）
+        console.log(match[0]);
+        return JSON.parse(match[0]); // 返回匹配项中的第一个子表达式（即中括号内的内容）
       } else {
         return null; // 如果未找到匹配项，则返回 null
       }
@@ -138,15 +156,7 @@ export default {
       // let obj = new Function(script)();
       let obj = {
         data: () => {
-          return {
-            list: [{
-              title: '标题标题标题1',
-              date: '2021-01-01',
-            }, {
-              title: '标题标题标题2',
-              date: '2021-01-02',
-            }]
-          }
+          return this.feData
         }
       };
       obj.template = template;
