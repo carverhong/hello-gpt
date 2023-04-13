@@ -26,8 +26,11 @@ export const defaultMsg = [
                             "title": "标题标题标题2",
                             "date": "2021-01-02",
                         }],
-                        "header-row-class-name": "header-row-class-name",
                         ":highlight-current-row": true,
+                        ":header-cell-style": {background:"#f5f5f5",color:"#333",fontWeight:"bold"},
+                        ":row-style": {background:"#fff",color:"#333"},
+                        ":cell-style": {padding:"10px 0"},
+                        ":border": true
                     },
                     "children": [
                         {
@@ -68,7 +71,7 @@ export const defaultMsg = [
         6. 我只需要一段JSON Patch，请不要给我多余的描述。
         7. 请用ElementUI的组件来实现。
         8. 所有数据以静态数据的形式给我，生成的JSONPatch中不要出现v-model、@click等动态数据。以及不要出现任何变量。
-        9. 除了第一次外，每次返回的JSON Patch都是基于上一次的结果重新生成的，上一次结果存在的DSL请不要重复生成，JSONPatch的path都是相对于上一次的结果的。并且也是一个数组。
+        9. 除了第一次外，每次返回的JSON Patch都是基于上一次的结果重新生成的，上一次结果存在的DSL请不要重复生成，只需要生成新增的部分。JSONPatch的path都是相对于上一次的结果的。并且也是一个数组。
         `
     },
 ]
@@ -88,9 +91,7 @@ export const defaultDSL =
                     "tag": "el-table",
                     "props": {
                         ":data": [],
-                        "header-row-class-name": "header-row-class-name",
                         ":highlight-current-row": true,
-                        "row-class-name": "row-class-name"
                     },
                     "children": [
                         {
