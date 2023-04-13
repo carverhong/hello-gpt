@@ -33,6 +33,7 @@ import jsonpatch from 'jsonpatch'
 import Vue from 'vue'
 import ElTemplate from './components/ElTemplate.vue';
 import { mockData } from './mock/data';
+import axios from 'axios';
 
 export default {
   name: "app",
@@ -52,7 +53,8 @@ export default {
       content: {},
       isShow: false,
       list: [],
-      feData: {}
+      feData: {},
+      apiData: []
     };
   },
   mounted() {
@@ -70,8 +72,20 @@ export default {
         this.apiKeyDialogShow = false;
       }
     },
+    /** 查询数据 */
+    async getData() {
+      try {
+        const res = await axios.get('/pmiapi/getPmiData?startMonth=2022-03&endMonth=2022-03');
+        console.log('getData() success', res.data);
+        return res.data;
+      } catch (err) {
+        console.log('getData() error', err.message);
+        return mockData;
+      }
+    },
     async onSubmit(event) {
       event.preventDefault();
+      this.apiData = await this.getData();
       try {
         this.loading = true;
         this.message.push({
@@ -150,7 +164,7 @@ export default {
         data: () => {
           return {
             ...this.feData,
-            data: mockData
+            data: this.apiData
           }
         }
       };

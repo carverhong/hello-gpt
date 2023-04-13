@@ -11,7 +11,7 @@ module.exports = defineConfig({
         proxyTimeout: 1000 * 60 * 10,
         timeout: 1000 * 60 * 10
       }, // TODO: 替换Azure代理地址
-      '/dataList': { target: 'http://127.0.0.1:9999' } // TODO: 替换后台接口地址
+      '/pmiapi/getPmiData': { target: 'http://10.60.107.4:8080' } // TODO: 替换后台接口地址
     },
   }
 });
